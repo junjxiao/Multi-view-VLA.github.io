@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="World-Env: Leveraging World Model as a Virtual Environment for VLA Post-Training">
+  <meta name="keywords" content="World-Env, world-env, VLA, RL">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>World-Env: Leveraging World Model as a Virtual Environment for VLA Post-Training</title>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-PYVRSFMDRL');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+</head>
+<body>
+
+<!-- <nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu">
+    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+      <a class="navbar-item" href="https://keunhong.com">
+      <span class="icon">
+          <i class="fas fa-home"></i>
+      </span>
+      </a>
+
+      <div class="navbar-item has-dropdown is-hoverable">
+        <a class="navbar-link">
+          More Research
+        </a>
+        <div class="navbar-dropdown">
+          <a class="navbar-item" href="https://hypernerf.github.io">
+            HyperNeRF
+          </a>
+          <a class="navbar-item" href="https://nerfies.github.io">
+            Nerfies
+          </a>
+          <a class="navbar-item" href="https://latentfusion.github.io">
+            LatentFusion
+          </a>
+          <a class="navbar-item" href="https://photoshape.github.io">
+            PhotoShape
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</nav> -->
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">World-Env: Leveraging World Model as a Virtual Environment for VLA Post-Training</h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="">Junjin Xiao</a><sup>1,2</sup>,</span>
+            <span class="author-block">
+              <a href="https://yandanyang.github.io/">Yandan Yang</a><sup>2</sup>,</span>
+            <span class="author-block">
+              <a href="">Xinyuan Chang</a><sup>2</sup>,
+            </span>
+            <span class="author-block">
+              <a href="">Ronghan Chen</a><sup>2</sup>,
+            </span>
+            <span class="author-block">
+              <a href="">Feng Xiong</a><sup>2</sup>,
+            </span>
+            <span class="author-block">
+              <a href="">Mu Xu</a><sup>2</sup>,
+            </span>
+            <span class="author-block">
+              <a href="http://www.isee-ai.cn/~zhwshi/">Wei-Shi Zheng</a><sup>1</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://www.zhangqing-home.net/">Qing Zhang</a><sup>1</sup>
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>Sun Yat-sen University,</span>
+            <span class="author-block"><sup>2</sup>Amap, Alibaba Group</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+              <span class="link-block">
+                <a href="https://arxiv.org/pdf/2509.24948"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/2509.24948"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href="https://github.com/amap-cvlab/world-env"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                  </a>
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Vision-Language-Action (VLA) models trained via imitation learning suffer from significant performance degradation in data-scarce scenarios due to their reliance on large-scale demonstration datasets. Although reinforcement learning (RL)-based post-training has proven effective in addressing data scarcity, its application to VLA models is hindered by the non-resettable nature of real-world environments. This limitation is particularly critical in high-risk domains such as industrial automation, where interactions often induce state changes that are costly or infeasible to revert. Furthermore, existing VLA approaches lack a reliable mechanism for detecting task completion, leading to redundant actions that reduce overall task success rates. To address these challenges, we propose World-Env, an RL-based post-training framework that replaces physical interaction with a low-cost, world model-based virtual simulator. World-Env consists of two key components: (1) a video-based world simulator that generates temporally consistent future visual observations, and (2) a vision-language model (VLM)-guided instant reflector that provides continuous reward signals and predicts action termination. This simulated environment enables VLA models to safely explore and generalize beyond their initial imitation learning distribution. Our method achieves notable performance gains with as few as five expert demonstrations per task. Experiments on complex robotic manipulation tasks demonstrate that World-Env effectively overcomes the data inefficiency, safety constraints, and inefficient execution of conventional VLA models that rely on real-world interaction, offering a practical and scalable solution for post-training in resource-constrained settings.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract. -->
+
+    <!-- teaser. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <!-- <h2 class="title is-3">Teaser</h2> -->
+        <div class="teaser">
+          <img src="./static/images/teaser.png"
+                 class="teaser"
+                 alt="Teaser image."/>
+        </div>
+        <div class="content has-text-justified">
+          <p>
+            Figure 1. Comparison of three VLA training paradigms: (a) Imitation learning suffers from poor generalization under data scarcity. (b) Prior RL-based post-training methods require real-world interaction, which is often infeasible due to non-resettable state transitions (e.g., object drop or collision). (c) Our proposed World-Env enables post-training via simulated rollouts using a world model, eliminating the need for physical interaction and supporting safe, efficient exploration even with minimal expert demonstrations.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ teaser. -->
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Overview. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Method</h2>
+        <div class="content has-text-justified">
+          <img src="./static/images/overview.png"
+                 class="teaser"
+                 alt="Teaser image."/>
+        </div>
+        <div class="content has-text-justified">
+          <p>
+            Figure 2. Overview of World-Env. Our framework comprises: (1) a Training Data Strategy that augments human demonstrations trajectories with VLA self-explored trajectories to train the WorldEnv Simulator; (2) an Optimization Loop where the VLA model generates actions, the simulator predicts future observations, and the World-Env Reflector generates feedback; and (3) Reward & End Signal provides trajectory-wise reward and end signals for RL optimization.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ method. -->
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- results. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Comparison Results</h2>
+        <div class="content has-text-justified">
+          <img src="./static/images/tab1.png"
+                 class="table"
+                 alt="table 1."/>
+          <p>Table 1. Success rate comparison on the LIBERO benchmark. We report success rates for each method using the same setting with only 5 demonstrations per task. </p>
+        </div>
+        <div class="content has-text-justified">
+          <img src="./static/images/line.png"
+                 class="figure"
+                 alt="figure3 1."/>
+          <p>Figure 2. Comparison between our method and SFT on multi-goal tasks. Note, all results are collected every 5 training steps for three distinct goals. </p>
+        </div>
+      </div>
+    </div>
+    <!--/ result. -->
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+
+    <div class="columns is-centered has-text-centered">
+
+      <!-- Visual Effects. -->
+      <div class="column">
+        <div class="content">
+          <h2 class="title is-3">Rendering Results of World-env</h2>
+          <video id="demo1" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/demo_1.mp4"
+                    type="video/mp4">
+          </video>
+          <video id="demo2" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/demo_2.mp4"
+                    type="video/mp4">
+          </video>
+          <video id="demo3" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/demo_3.mp4"
+                    type="video/mp4">
+          </video>
+          <video id="demo4" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/demo_5.mp4"
+                    type="video/mp4">
+          </video>
+          <video id="demo5" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/demo_6.mp4"
+                    type="video/mp4">
+          </video>
+          <video id="demo6" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/demo_7.mp4"
+                    type="video/mp4">
+          </video>
+          <video id="demo7" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/demo_9.mp4"
+                    type="video/mp4">
+          </video>
+          <video id="demo8" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/demo_10.mp4"
+                    type="video/mp4">
+          </video>
+          <video id="demo9" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/demo_11.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+      </div>
+      <!--/ Visual Effects. -->
+
+    </div>
+
+  </div>
+</section>
+
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@misc{xiao2025worldenvleveragingworldmodel,
+      title={World-Env: Leveraging World Model as a Virtual Environment for VLA Post-Training}, 
+      author={Junjin Xiao and Yandan Yang and Xinyuan Chang and Ronghan Chen and Feng Xiong and Mu Xu and Wei-Shi Zheng and Qing Zhang},
+      year={2025},
+      eprint={2509.24948},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2509.24948}, 
+}</code></pre>
+  </div>
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            Website template is borrowed from <a
+              href="https://github.com/nerfies/nerfies.github.io">nerfies</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
