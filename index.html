@@ -1,332 +1,1157 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="description"
-        content="World-Env: Leveraging World Model as a Virtual Environment for VLA Post-Training">
-  <meta name="keywords" content="World-Env, world-env, VLA, RL">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>World-Env: Leveraging World Model as a Virtual Environment for VLA Post-Training</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Action Manifolds with Multi-view Latent Priors</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
 
-  <!-- Global site tag (gtag.js) - Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
+    <!-- KaTeX for Math Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
-    function gtag() {
-      dataLayer.push(arguments);
-    }
+    <style>
+        :root {
+            --primary: #111827;
+            --secondary: #4b5563;
+            --accent: #2563eb;
+            --bg-light: #f9fafb;
+            --card-bg: #ffffff;
+            --table-header: #f3f4f6;
+            --table-border: #e5e7eb;
+            --highlight-bg: #eff6ff;
+            --highlight-text: #1e40af;
+            --border-color: #e5e7eb;
+        }
 
-    gtag('js', new Date());
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--secondary);
+            background-color: #fff;
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
 
-    gtag('config', 'G-PYVRSFMDRL');
-  </script>
+        h1, h2, h3, h4 {
+            font-family: 'Outfit', sans-serif;
+            color: var(--primary);
+            font-weight: 700;
+        }
 
-  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
-        rel="stylesheet">
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
 
-  <link rel="stylesheet" href="./static/css/bulma.min.css">
-  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
-  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
-  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
-  <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
-  <link rel="stylesheet" href="./static/css/index.css">
-  <link rel="icon" href="./static/images/favicon.svg">
+        a:hover {
+            color: #1d4ed8;
+            text-decoration: underline;
+        }
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script defer src="./static/js/fontawesome.all.min.js"></script>
-  <script src="./static/js/bulma-carousel.min.js"></script>
-  <script src="./static/js/bulma-slider.min.js"></script>
-  <script src="./static/js/index.js"></script>
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Hero Section */
+        header {
+            padding: 5rem 0 3rem;
+            text-align: center;
+        }
+
+        .paper-title {
+            font-size: 2.5rem;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .authors {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.8rem;
+        }
+
+        .author-block {
+            white-space: nowrap;
+        }
+
+        .affiliations {
+            font-size: 0.95rem;
+            color: #6b7280;
+            margin-bottom: 2.5rem;
+        }
+
+        /* Buttons */
+        .links-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.6rem 1.2rem;
+            background-color: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 9999px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 0.95rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .btn i, .btn svg {
+            margin-right: 0.5rem;
+            width: 1.1em; 
+            height: 1.1em;
+            vertical-align: middle;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-color: var(--accent);
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: 1px solid var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: #000;
+            color: white;
+        }
+
+        /* Sections */
+        section {
+            padding: 4rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .content-text {
+            font-size: 1.05rem;
+            text-align: justify;
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        .content-text p {
+            margin-bottom: 1.2rem;
+        }
+
+        /* Figures & Cards */
+        .figure-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            margin: 2rem auto;
+            max-width: 900px;
+            border: 1px solid #f3f4f6;
+            transition: transform 0.3s ease;
+        }
+
+        .figure-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .figure-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .caption {
+            padding: 1.5rem;
+            font-size: 0.95rem;
+            color: #4b5563;
+            background: #fff;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .caption strong {
+            color: #111827;
+        }
+
+        /* Method Modules (Vertical Stack Layout) */
+        .method-modules-container {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem; /* Space between AML and G3T blocks */
+            margin-top: 3rem;
+        }
+
+        .module-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: box-shadow 0.3s ease;
+            display: grid;
+            grid-template-columns: 1fr; /* Default mobile: stack */
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media (min-width: 768px) {
+            .module-card {
+                grid-template-columns: 1fr 1.2fr; /* Desktop: Text Left, Image Right (or vice versa) */
+                /* Alternatively, keep image below text by keeping it 1fr and using order if needed, 
+                   but side-by-side inside the card usually looks better for wide images. 
+                   Here we will stack them vertically as requested: Text Top, Image Bottom */
+                grid-template-columns: 1fr; 
+            }
+        }
+
+        .module-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .module-card h3 {
+            margin-top: 0;
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .module-card p {
+            font-size: 1.05rem;
+            color: var(--secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .module-image-wrapper {
+            margin-top: 1rem;
+            text-align: center;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid #f3f4f6;
+        }
+
+        .module-image-wrapper img {
+            width: 60%;
+            height: auto;
+            border-radius: 4px;
+            max-height: 500px; /* Limit height if image is very tall */
+            object-fit: contain;
+        }
+
+        .module-caption {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-top: 1rem;
+            text-align: left;
+            line-height: 1.5;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            margin: 2rem 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--table-border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: white;
+            min-width: 600px; 
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid var(--table-border);
+        }
+
+        th {
+            background-color: var(--table-header);
+            color: var(--primary);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr.ours-row {
+            background-color: var(--highlight-bg) !important;
+            color: var(--highlight-text);
+            font-weight: 700;
+        }
+        
+        tr.ours-row td {
+            border-top: 2px solid var(--accent);
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .bold-val {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .table-caption {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Video Grid (1:1 Aspect Ratio) */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .video-item {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            background: #000;
+            aspect-ratio: 1/1; 
+        }
+
+        .video-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+        }
+
+        .video-label {
+            position: absolute;
+            top: 0;          /* 修改点1: 从 bottom: 0 改为 top: 0 */
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.6); /* 保持半透明黑色背景，确保文字清晰 */
+            color: white;
+            padding: 0.8rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            backdrop-filter: blur(4px);
+            text-align: center;
+            
+            /* 新增/修改点2: 给底部添加圆角，使其与视频顶部边缘贴合更美观 */
+            border-bottom-left-radius: 12px; 
+            border-bottom-right-radius: 12px;
+        }
+
+        /* BibTeX with Copy Button */
+        .bibtex-wrapper {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .bibtex-container {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            padding-right: 3.5rem;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            color: #334155;
+            white-space: pre-wrap;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 6px 10px;
+            cursor: pointer;
+            color: #64748b;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .copy-btn:hover {
+            background: #f1f5f9;
+            color: var(--primary);
+        }
+
+        .copy-btn.copied {
+            background: #dcfce7;
+            color: #166534;
+            border-color: #bbf7d0;
+        }
+
+        /* Carousel / Slider */
+        .carousel-section {
+            position: relative;
+            padding: 4rem 0;
+            background: #fff;
+        }
+
+        .carousel-container {
+            position: relative;
+            max-width: 1000px;
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .carousel-track {
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            cursor: grab;
+        }
+
+        .carousel-track:active {
+            cursor: grabbing;
+        }
+
+        .carousel-slide {
+            min-width: 100%;
+            position: relative;
+        }
+
+        .carousel-slide img {
+            width: 100%;
+            height: auto;
+            display: block;
+            user-select: none;
+        }
+
+        .carousel-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 1rem;
+            pointer-events: none;
+        }
+
+        .carousel-btn {
+            background: rgba(255, 255, 255, 0.8);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            pointer-events: auto;
+            transition: all 0.2s;
+        }
+
+        .carousel-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .carousel-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 1.5rem;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #d1d5db;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .dot.active {
+            background: var(--accent);
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem 0;
+            color: #9ca3af;
+            font-size: 0.85rem;
+            background: #f9fafb;
+        }
+
+        .highlight-box {
+            background-color: #eff6ff;
+            border-left: 4px solid var(--accent);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .highlight-box p {
+            margin: 0;
+            color: #1e40af;
+        }
+
+    </style>
 </head>
 <body>
 
-<!-- <nav class="navbar" role="navigation" aria-label="main navigation">
-  <div class="navbar-brand">
-    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
-    </a>
-  </div>
-  <div class="navbar-menu">
-    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
-      <a class="navbar-item" href="https://keunhong.com">
-      <span class="icon">
-          <i class="fas fa-home"></i>
-      </span>
-      </a>
-
-      <div class="navbar-item has-dropdown is-hoverable">
-        <a class="navbar-link">
-          More Research
-        </a>
-        <div class="navbar-dropdown">
-          <a class="navbar-item" href="https://hypernerf.github.io">
-            HyperNeRF
-          </a>
-          <a class="navbar-item" href="https://nerfies.github.io">
-            Nerfies
-          </a>
-          <a class="navbar-item" href="https://latentfusion.github.io">
-            LatentFusion
-          </a>
-          <a class="navbar-item" href="https://photoshape.github.io">
-            PhotoShape
-          </a>
+    <!-- Header -->
+    <header class="container">
+        <h1 class="paper-title">Learning Action Manifolds with Multi-view Latent Priors for Robotic Manipulation</h1>
+        
+        <div class="authors">
+            <span class="author-block"><a href="#">Junjin Xiao</a><sup>1,2*</sup></span>
+            <span class="author-block"><a href="#">Dongyang Li</a><sup>1*</sup></span>
+            <span class="author-block"><a href="https://yandanyang.github.io/">Yandan Yang</a><sup>2</sup></span>
+            <span class="author-block"><a href="#">Shuang Zeng</a><sup>3</sup></span>
+            <span class="author-block"><a href="#">Tong Lin</a><sup>2,3</sup></span>
+            <span class="author-block"><a href="#">Xinyuan Chang</a><sup>2</sup></span> 
+            <span class="author-block"><a href="#">Feng Xiong</a><sup>2</sup></span>
+            <span class="author-block"><a href="#">Mu Xu</a><sup>2</sup></span>
+            <span class="author-block"><a href="http://www.isee-ai.cn/~zhwshi/">Wei-Shi Zheng</a><sup>1</sup></span>
+            <span class="author-block"><a href="https://gr.xjtu.edu.cn/en/web/weixing/home">Xing Wei</a><sup>3</sup></span>
+            <span class="author-block"><a href="https://zhiheng-ma.github.io/">Zhiheng Ma</a><sup>4†</sup></span>
+            <span class="author-block"><a href="https://www.zhangqing-home.net/">Qing Zhang</a><sup>1†</sup></span>
         </div>
-      </div>
-    </div>
 
-  </div>
-</nav> -->
+        <div class="affiliations">
+            <div><sup>1</sup>Sun Yat-sen University &nbsp; <sup>2</sup>Amap, Alibaba Group</div>
+            <div><sup>3</sup>Xi'an Jiaotong University &nbsp; <sup>4</sup>Shenzhen Institute of Advanced Technology</div>
+            <div style="margin-top: 5px; font-size: 0.8em; color: #9ca3af;">*Equal Contribution, †Co-corresponding Authors</div>
+        </div>
 
+        <div class="links-container">
+            <a href="#" class="btn">
+                <i class="ai ai-arxiv"></i> arXiv
+            </a>
+            <a href="#" class="btn">
+                <i class="fab fa-github"></i> Code
+            </a>
+            <a href="#" class="btn">
+                <!-- Official Hugging Face SVG Icon -->
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M509.0304 870.656c94.6432 0 185.4464-37.3504 252.3904-103.8336a353.28 353.28 0 0 0 104.5504-250.6752 353.28 353.28 0 0 0-104.5504-250.6752 358.1952 358.1952 0 0 0-252.416-103.8336 358.1696 358.1696 0 0 0-252.3904 103.8336 353.28 353.28 0 0 0-104.5504 250.6752 353.28 353.28 0 0 0 104.5504 250.6752 358.1696 358.1696 0 0 0 252.416 103.8336z" fill="#FFD21E"></path>
+                    <path d="M865.9712 516.1472a353.28 353.28 0 0 0-104.5504-250.6752 358.1952 358.1952 0 0 0-252.416-103.8336 358.1952 358.1952 0 0 0-252.3904 103.8336 353.28 353.28 0 0 0-104.5504 250.6752 353.28 353.28 0 0 0 104.5504 250.6752 358.1952 358.1952 0 0 0 252.416 103.8336c94.6432 0 185.4464-37.3504 252.3904-103.8336a353.28 353.28 0 0 0 104.5504-250.6752z m-754.9952 0c0-51.9168 10.3168-103.3216 30.3104-151.296a395.1616 395.1616 0 0 1 86.272-128.2304 398.208 398.208 0 0 1 129.152-85.6832 400.384 400.384 0 0 1 304.64 0c48.2816 19.8656 92.16 48.9728 129.1264 85.6832a395.1616 395.1616 0 0 1 86.272 128.256 392.96 392.96 0 0 1 30.2848 151.296c0 104.832-41.9328 205.3632-116.5568 279.5008a399.4112 399.4112 0 0 1-281.472 115.7888A399.4112 399.4112 0 0 1 227.584 795.6736a393.9584 393.9584 0 0 1-116.5824-279.5264z" fill="#FF9D0B"></path>
+                    <path d="M624.9984 419.7376c13.1328 4.5056 18.2784 31.232 31.5136 24.2944a51.2 51.2 0 0 0 21.1456-20.8896 50.688 50.688 0 0 0-5.4272-56.4224 51.3792 51.3792 0 0 0-54.5792-16.5888c-9.728 2.8928-18.3552 8.6016-24.832 16.384a50.8416 50.8416 0 0 0-5.7344 56.3968c6.272 11.7248 26.1888-7.3472 38.016-3.2768l-0.1024 0.1024z m-241.92 0c-13.1328 4.5056-18.3808 31.232-31.5136 24.2944a51.2 51.2 0 0 1-21.1456-20.8896 50.688 50.688 0 0 1 5.4272-56.4224 51.4048 51.4048 0 0 1 54.5792-16.5888c9.728 2.8928 18.3808 8.6016 24.832 16.384a50.8416 50.8416 0 0 1 5.7344 56.3968c-6.272 11.7248-26.2912-7.3472-38.016-3.2768l0.1024 0.1024z" fill="#3A3B45"></path>
+                    <path d="M506.4448 664.4736c100.9664 0 133.5296-89.344 133.5296-135.2704 0-23.8592-16.128-16.3072-41.984-3.6608-23.9616 11.7248-56.0896 27.9552-91.4432 27.9552-73.8304 0-133.5296-70.1952-133.5296-24.2944 0 45.9008 32.4608 135.2704 133.5296 135.2704h-0.1024z" fill="#FF323D"></path>
+                    <path d="M429.1072 641.1264a88.8832 88.8832 0 0 1 54.4512-45.824c4.096-1.2032 8.32 5.8368 12.7232 13.056 4.096 6.9632 8.448 14.0032 12.7488 14.0032 4.608 0 9.216-6.9376 13.6448-13.7728 4.6336-7.168 9.1392-14.08 13.568-12.7488a88.32 88.32 0 0 1 51.3536 42.5216C625.92 608.384 640 559.4112 640 529.2032c0-23.8592-16.128-16.3072-42.0352-3.6608l-1.4336 0.7168c-23.7312 11.7248-55.3472 27.2384-90.0608 27.2384-34.7392 0-66.2528-15.5136-90.112-27.2384-26.7008-13.1584-43.4432-21.4272-43.4432 2.944 0 31.1296 15.0016 82.2272 56.192 111.9232z" fill="#3A3B45"></path>
+                    <path d="M750.4128 467.712c8.8576 0 17.3312-3.5072 23.6032-9.728a33.024 33.024 0 0 0 0-46.8992 33.5104 33.5104 0 0 0-47.2064 0 33.024 33.024 0 0 0 0 46.8992c6.2464 6.2208 14.7456 9.728 23.6032 9.728z m-477.6448 0c8.8576 0 17.3568-3.5072 23.6032-9.728a33.024 33.024 0 0 0 0-46.8992 33.5104 33.5104 0 0 0-47.2064 0 33.024 33.024 0 0 0 0 46.8992c6.272 6.2208 14.7456 9.728 23.6032 9.728z m-68.7104 112.2048c-16.64 0-31.4368 6.7328-41.8048 19.072a60.6464 60.6464 0 0 0-13.6704 38.3488 73.472 73.472 0 0 0-19.9168-3.072c-15.9232 0-30.3104 6.0416-40.4736 16.9472a59.008 59.008 0 0 0-8.2176 71.424 54.016 54.016 0 0 0-18.3808 28.7744 59.3152 59.3152 0 0 0 8.192 48.3584 53.0176 53.0176 0 0 0-3.7888 51.2c10.496 23.68 36.6848 42.24 87.5264 62.2336 31.5392 12.4416 60.4928 20.4032 60.6976 20.5056a458.24 458.24 0 0 0 112.2816 16.3328c60.16 0 103.2192-18.3808 127.9744-54.4768 39.8592-58.0608 34.2016-111.2064-17.4592-162.432-28.4672-28.3648-47.4624-70.0672-51.3536-79.2576-8.0128-27.136-29.184-57.344-64.2048-57.344a58.88 58.88 0 0 0-47.2576 25.088c-10.2656-12.8256-20.3264-22.9376-29.3632-28.7488a76.3648 76.3648 0 0 0-40.7808-12.9536z m0 40.8064c5.2224 0 11.6992 2.2528 18.688 6.6304 21.9904 13.8752 64.2048 86.016 79.7184 114.048 5.12 9.3952 14.08 13.3632 21.9648 13.3632 15.9232 0 28.2624-15.616 1.536-35.5072-40.2432-29.8752-26.1888-78.7456-6.9632-81.7152 0.8192-0.2048 1.7408-0.2048 2.4576-0.2048 17.4592 0 25.1648 29.9008 25.1648 29.9008s22.6048 56.32 61.44 94.8736c38.7072 38.4768 40.7552 69.376 12.5184 110.4896-19.3024 28.0576-56.192 36.5312-94.08 36.5312-39.168 0-79.4112-9.216-101.888-14.8992-1.152-0.3072-138.1632-38.784-120.832-71.424 2.8928-5.504 7.7312-7.7568 13.7728-7.7568 24.448 0 68.8384 36.1216 88.0384 36.1216 4.1984 0 7.168-1.7408 8.5248-6.1184 8.1152-29.0816-123.8784-41.3184-112.7936-83.3536 2.048-7.424 7.296-10.3936 14.7968-10.3936 32.256 0 104.7808 56.3968 119.9872 56.3968 1.1264 0 2.048-0.2816 2.4576-1.024 7.6032-12.2368 3.3792-20.7872-50.3296-53.0432-53.504-32.2304-91.2128-51.6096-69.8624-74.752 2.4832-2.6624 5.9648-3.8912 10.2912-3.8912 32.5632 0 109.4912 69.5808 109.4912 69.5808s20.736 21.4272 33.3824 21.4272c2.8672 0 5.3504-1.024 6.9888-3.8912 8.832-14.8992-82.7904-83.8656-87.936-112.3072-3.4816-19.4048 2.4576-29.0816 13.4656-29.0816z" fill="#FF9D0B"></path>
+                    <path d="M420.5824 872.6016c28.2368-41.216 26.1888-72.1152-12.544-110.592-38.8096-38.4512-61.4144-94.8736-61.4144-94.8736s-8.4224-32.64-27.648-29.5936c-19.2 3.072-33.28 51.84 7.0144 81.7152 40.1408 29.9008-8.0128 50.2016-23.552 22.144-15.3856-28.0576-57.7024-100.1728-79.6928-114.048-21.888-13.7728-37.2736-6.144-32.1536 22.4512 5.12 28.4416 96.8704 97.408 87.936 112.2048-8.96 15.0016-40.3712-17.4336-40.3712-17.4336s-98.304-88.8576-119.7568-65.7152c-21.376 23.168 16.3328 42.5472 69.8368 74.7776 53.7088 32.256 57.9328 40.8064 50.3296 53.0688-7.68 12.2368-126.1312-87.04-137.216-44.9024-11.1104 41.9328 120.8832 54.0672 112.768 83.1488-8.192 29.0816-93.056-54.8864-110.336-22.2464-17.4336 32.768 119.68 71.2192 120.832 71.5264 44.16 11.4176 156.6208 35.584 195.968-21.632z" fill="#FFD21E"></path>
+                    <path d="M819.1232 579.9168c16.64 0 31.5392 6.7328 41.8048 19.072 8.8576 10.8544 13.6704 24.3968 13.6704 38.3488 6.5024-1.92 13.2352-2.9696 20.0192-3.072 15.9232 0 30.3104 6.0416 40.4736 16.9472a58.9824 58.9824 0 0 1 8.2176 71.424c9.0624 7.3728 15.4624 17.4592 18.2784 28.7744a59.2896 59.2896 0 0 1-8.192 48.3584 52.992 52.992 0 0 1 3.7888 51.2c-10.496 23.68-36.6848 42.24-87.424 62.208-31.6416 12.4672-60.5952 20.4288-60.8 20.5312-36.608 10.0608-74.3168 15.5392-112.2816 16.3328-60.1856 0-103.2192-18.3808-128-54.4768-39.8336-58.0608-34.176-111.2064 17.4848-162.432 28.544-28.3648 47.5648-70.0672 51.456-79.2576 8.0128-27.136 29.0816-57.344 64.1024-57.344a58.88 58.88 0 0 1 47.232 25.088c10.2912-12.8256 20.352-22.9376 29.4912-28.7488a76.3904 76.3904 0 0 1 40.6784-12.9536z m0 40.8064c-5.248 0-11.5968 2.2272-18.688 6.6304-21.888 13.8752-64.2048 86.016-79.7184 114.048a24.832 24.832 0 0 1-21.9648 13.3632c-15.8208 0-28.2624-15.616-1.4592-35.5072 40.192-29.8752 26.112-78.7456 6.912-81.7152a15.872 15.872 0 0 0-2.4832-0.2048c-17.4592 0-25.1648 29.9008-25.1648 29.9008s-22.6048 56.32-61.3376 94.8736c-38.8096 38.4512-40.8576 69.376-12.544 110.4896 19.2256 28.0576 56.2176 36.5312 94.0032 36.5312 39.2448 0 79.4112-9.216 102.016-14.8992 1.024-0.3072 138.1376-38.784 120.7808-71.424-2.9696-5.504-7.68-7.7568-13.7728-7.7568-24.4224 0-68.9152 36.1216-88.0128 36.1216-4.3264 0-7.296-1.7408-8.5248-6.144-8.2176-29.056 123.776-41.2928 112.6656-83.328-1.9456-7.424-7.168-10.3936-14.7712-10.3936-32.256 0-104.7808 56.3968-119.9872 56.3968-1.024 0-1.9456-0.3072-2.3552-1.024-7.6032-12.2368-3.5072-20.7872 50.1248-53.0432 53.7088-32.2304 91.392-51.6096 69.8368-74.752-2.3552-2.6624-5.8368-3.8912-10.0608-3.8912-32.6656 0-109.5936 69.5808-109.5936 69.5808s-20.736 21.4272-33.28 21.4272a7.6288 7.6288 0 0 1-6.9888-3.8912c-8.9344-14.8992 82.688-83.8656 87.808-112.3072 3.5072-19.4048-2.4576-29.0816-13.44-29.0816z" fill="#FF9D0B"></path>
+                    <path d="M602.7008 872.6016c-28.2368-41.216-26.2912-72.1152 12.544-110.592 38.7072-38.4512 61.312-94.8736 61.312-94.8736s8.4224-32.64 27.7248-29.5936c19.1232 3.072 33.1776 51.84-6.9888 81.7152-40.2432 29.9008 8.0128 50.2016 23.424 22.144 15.5136-28.0576 57.856-100.1728 79.7184-114.048 21.8624-13.7728 37.376-6.144 32.1536 22.4512-5.12 28.4416-96.768 97.408-87.808 112.2048 8.8064 15.0016 40.2432-17.4336 40.2432-17.4336s98.4064-88.8576 119.7568-65.7152c21.376 23.168-16.2304 42.5472-69.8368 74.7776-53.7344 32.256-57.8304 40.8064-50.3296 53.0688 7.68 12.2368 126.1312-87.04 137.216-44.9024 11.1104 41.9328-120.7808 54.0672-112.6656 83.1488 8.192 29.0816 92.9536-54.8864 110.336-22.2464 17.3312 32.768-119.68 71.2192-120.832 71.5264-44.2624 11.4176-156.7232 35.584-195.968-21.632z" fill="#FFD21E"></path>
+                </svg>
+                <span style="margin-left: 5px;">HuggingFace</span>
+            </a>
+            <a href="#" class="btn">
+                <svg style="width: 1.2em; height: 1.2em; vertical-align: middle; margin-right: 5px;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M171.878 277.826h190.068v91.954h-97.563v98.114h-92.505V277.826zM171.878 757.998h190.068v-91.955h-97.563V567.93h-92.505v190.068zM852.122 757.998H662.054v-91.955h97.563V567.93h92.505v190.068zM852.122 277.826H662.054v91.954h97.563v98.114h92.505V277.826z" fill="#7264CE"></path>
+                  <path d="M71.842 367.858h100.036v100.036H71.842V367.858zM361.946 467.894h100.036V567.93H361.946V467.894zM562.018 467.894h100.036V567.93H562.018V467.894zM852.122 367.858h100.036v100.036H852.122V367.858z" fill="#1FBFE1"></path>
+                </svg> ModelScope
+            </a>
+        </div>
+    </header>
 
-<section class="hero">
-  <div class="hero-body">
-    <div class="container is-max-desktop">
-      <div class="columns is-centered">
-        <div class="column has-text-centered">
-          <h1 class="title is-1 publication-title">World-Env: Leveraging World Model as a Virtual Environment for VLA Post-Training</h1>
-          <div class="is-size-5 publication-authors">
-            <span class="author-block">
-              <a href="">Junjin Xiao</a><sup>1,2</sup>,</span>
-            <span class="author-block">
-              <a href="https://yandanyang.github.io/">Yandan Yang</a><sup>2</sup>,</span>
-            <span class="author-block">
-              <a href="">Xinyuan Chang</a><sup>2</sup>,
-            </span>
-            <span class="author-block">
-              <a href="">Ronghan Chen</a><sup>2</sup>,
-            </span>
-            <span class="author-block">
-              <a href="">Feng Xiong</a><sup>2</sup>,
-            </span>
-            <span class="author-block">
-              <a href="">Mu Xu</a><sup>2</sup>,
-            </span>
-            <span class="author-block">
-              <a href="http://www.isee-ai.cn/~zhwshi/">Wei-Shi Zheng</a><sup>1</sup>,
-            </span>
-            <span class="author-block">
-              <a href="https://www.zhangqing-home.net/">Qing Zhang</a><sup>1</sup>
-            </span>
-          </div>
+    <!-- Abstract -->
+    <section class="container">
+        <h2 class="section-title">Abstract</h2>
+        <div class="content-text">
+            <p>
+                This paper addresses the challenges of spatial perception and manipulation in Vision-Language-Action (VLA) models within complex environments. While recent works have attempted to enhance VLA perception ability by injecting or distilling features from 3D foundation models, they, however, achieve only limited spatial understanding accuracy improvement, due to biased geometric predictions led by inherent depth ambiguity under monocular input conditions. Furthermore, existing methods predominantly rely on diffusion-based or flow matching action noise prediction paradigms, where their adopted indirect decoding mechanisms tend to introduce unnecessary stochasticity and result in action jittering and inefficient sampling.
+            </p>
+            <p>
+                To address these issues, we present a VLA framework with two novel designs. First, to tackle depth ambiguity, we leverage pre-trained multi-view diffusion models to synthesize novel views in latent space. We introduce the <strong>Geometry-Guided Gated Transformer ($\text{G}^3\text{T}$)</strong> to align these multi-view latent priors with monocular 3D geometric features, selectively aggregating informative views while suppressing occlusion noise. Second, we propose <strong>Action Manifold Learning (AML)</strong>, a direct action prediction mechanism that shifts the target from abstract noise to direct action decoding on a low-dimensional manifold. Extensive evaluations on LIBERO, LIBERO-Plus, RoboTwin 2.0, and real-world robot experiments demonstrate that our method outperforms state-of-the-art baselines in both success rate and robustness.
+            </p>
+        </div>
 
-          <div class="is-size-5 publication-authors">
-            <span class="author-block"><sup>1</sup>Sun Yat-sen University,</span>
-            <span class="author-block"><sup>2</sup>Amap, Alibaba Group</span>
-          </div>
+        <!-- Teaser Figure -->
+        <div class="figure-card">
+            <img src="./static/images/teaser.png" alt="Teaser Comparison">
+            <div class="caption">
+                <strong>Figure 1. Methodology comparison.</strong> (a) Existing VLA models either rely on expensive RGB-D sensors or (b) suffer from severe depth ambiguity under monocular settings. (c) Our method leverages a multi-view diffusion prior and $\text{G}^3\text{T}$ to synthesize robust geometric features from a single RGB image. (d) Our method demonstrates superior stability against disturbances in LIBERO-Spatial tasks.
+            </div>
+        </div>
+    </section>
 
-          <div class="column has-text-centered">
-            <div class="publication-links">
-              <!-- PDF Link. -->
-              <span class="link-block">
-                <a href="https://arxiv.org/pdf/2509.24948"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="fas fa-file-pdf"></i>
-                  </span>
-                  <span>Paper</span>
-                </a>
-              </span>
-              <span class="link-block">
-                <a href="https://arxiv.org/abs/2509.24948"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="ai ai-arxiv"></i>
-                  </span>
-                  <span>arXiv</span>
-                </a>
-              </span>
-              <!-- Code Link. -->
-              <span class="link-block">
-                <a href="https://github.com/amap-cvlab/world-env"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="fab fa-github"></i>
-                  </span>
-                  <span>Code</span>
-                  </a>
-              </span>
+    <!-- Introduction / Key Insights -->
+    <section class="container" style="background-color: var(--bg-light); border-radius: 20px; padding: 3rem;">
+        <h2 class="section-title">Key Insights</h2>
+        <div class="method-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 2rem;">
+            <div class="method-item">
+                <h3>Spatial Perception Bottleneck</h3>
+                <p>
+                    Current VLA models struggle with monocular depth ambiguity. Injecting features from 3D foundation models often introduces noise due to the ill-posed nature of single-view geometry recovery. We argue that synthesizing multi-view latent priors provides complementary geometric cues that resolve this ambiguity without extra hardware.
+                </p>
+            </div>
+            <div class="method-item">
+                <h3>Action Manifold Hypothesis</h3>
+                <p>
+                    Traditional diffusion policies predict abstract noise ($\epsilon$-prediction), which is high-dimensional and unstructured. We posit that meaningful robot actions reside on a low-dimensional <strong>Action Manifold</strong>. By directly predicting clean actions on this manifold (AML), we eliminate unnecessary stochasticity and ensure smoother trajectory execution.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Method -->
+    <section class="container">
+        <h2 class="section-title">Methodology</h2>
+        
+        <!-- Overall Framework (Full Width) -->
+        <div class="figure-card method-full">
+            <img src="./static/images/method.png" alt="Overall Framework">
+            <div class="caption">
+                <strong>Figure 2. Overview of our method.</strong> The framework decouples semantic perception (Qwen3-VL) from geometric awareness. The Geometry Module combines VGGT monocular priors with synthesized multi-view latents via $\text{G}^3\text{T}$. The fused features guide the Action Manifold Learning (AML) expert to predict stable action chunks.
+            </div>
+        </div>
+
+        <!-- Vertical Stack Layout for AML and G3T -->
+        <div class="method-modules-container">
+            
+            <!-- Block 2: G3T (Bottom) -->
+            <div class="module-card">
+                <h3>Geometry-Guided Gated Transformer ($\text{G}^3\text{T}$)</h3>
+                <p>
+                    To robustly integrate spatial cues, $\text{G}^3\text{T}$ aligns monocular geometric priors (from VGGT) with synthesized multi-view latent features. It employs an <strong>adaptive gating mechanism</strong> to dynamically weigh the reliability of each view, effectively filtering out occlusions and resolving depth ambiguities.
+                </p>
+                <div class="module-image-wrapper">
+                    <img src="./static/images/g3t.png" alt="G3T Module">
+                    <div class="module-caption">
+                        <strong>Figure 3. $\text{G}^3\text{T}$ Architecture.</strong> Fusing monocular spatial tokens and synthesized multi-view tokens to produce robust, occlusion-aware spatial representations.
+                    </div>
+                </div>
             </div>
 
-          </div>
+            <!-- Block 1: AML (Top) -->
+            <div class="module-card">
+                <h3>Action Manifold Learning (AML)</h3>
+                <p>
+                    Unlike traditional methods that predict noise, AML uses a Diffusion Transformer (DiT) to directly estimate clean action chunks $\hat{A}_t$ on a low-dimensional manifold. We optimize using a velocity-consistent loss, which preserves the stability of flow matching while focusing the model's capacity on learning intrinsic action semantics.
+                </p>
+                <div class="module-image-wrapper">
+                    <img src="./static/images/aml.png" alt="Action Manifold Hypothesis">
+                    <div class="module-caption">
+                        <strong>Figure 4. Action Manifold Hypothesis.</strong> Meaningful action sequences reside on a low-dimensional manifold. Conventional noise/velocity targets are off-manifold and high-dimensional.
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<section class="section">
-  <div class="container is-max-desktop">
-    <!-- Abstract. -->
-    <div class="columns is-centered has-text-centered">
-      <div class="column is-four-fifths">
-        <h2 class="title is-3">Abstract</h2>
-        <div class="content has-text-justified">
-          <p>
-            Vision-Language-Action (VLA) models trained via imitation learning suffer from significant performance degradation in data-scarce scenarios due to their reliance on large-scale demonstration datasets. Although reinforcement learning (RL)-based post-training has proven effective in addressing data scarcity, its application to VLA models is hindered by the non-resettable nature of real-world environments. This limitation is particularly critical in high-risk domains such as industrial automation, where interactions often induce state changes that are costly or infeasible to revert. Furthermore, existing VLA approaches lack a reliable mechanism for detecting task completion, leading to redundant actions that reduce overall task success rates. To address these challenges, we propose World-Env, an RL-based post-training framework that replaces physical interaction with a low-cost, world model-based virtual simulator. World-Env consists of two key components: (1) a video-based world simulator that generates temporally consistent future visual observations, and (2) a vision-language model (VLM)-guided instant reflector that provides continuous reward signals and predicts action termination. This simulated environment enables VLA models to safely explore and generalize beyond their initial imitation learning distribution. Our method achieves notable performance gains with as few as five expert demonstrations per task. Experiments on complex robotic manipulation tasks demonstrate that World-Env effectively overcomes the data inefficiency, safety constraints, and inefficient execution of conventional VLA models that rely on real-world interaction, offering a practical and scalable solution for post-training in resource-constrained settings.
-          </p>
+    <!-- Experiments: TABLES FIRST -->
+    <section class="container">
+        <h2 class="section-title">Experimental Results</h2>
+        
+        <!-- Table 1: LIBERO -->
+        <div class="table-caption">Table 1. Evaluation results on the LIBERO benchmark.</div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Method</th>
+                        <th>Spatial</th>
+                        <th>Object</th>
+                        <th>Goal</th>
+                        <th>Long</th>
+                        <th>Average</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td style="text-align: left;">Diffusion Policy</td><td>78.5</td><td>87.5</td><td>73.5</td><td>64.8</td><td>76.1</td></tr>
+                    <tr><td style="text-align: left;">OpenVLA</td><td>84.7</td><td>88.4</td><td>79.2</td><td>53.7</td><td>76.5</td></tr>
+                    <tr><td style="text-align: left;">SpatialVLA</td><td>88.2</td><td>89.9</td><td>78.6</td><td>55.5</td><td>78.1</td></tr>
+                    <tr><td style="text-align: left;">CoT-VLA</td><td>87.5</td><td>91.6</td><td>87.6</td><td>69.0</td><td>83.9</td></tr>
+                    <tr><td style="text-align: left;">$\pi_0$-Fast</td><td>96.4</td><td>96.8</td><td>88.6</td><td>60.2</td><td>85.5</td></tr>
+                    <tr><td style="text-align: left;">GR00T-N1</td><td>94.4</td><td>97.6</td><td>93.0</td><td>90.6</td><td>93.9</td></tr>
+                    <tr><td style="text-align: left;">$\pi_0$</td><td>98.0</td><td>96.8</td><td>94.4</td><td>88.4</td><td>94.4</td></tr>
+                    <tr><td style="text-align: left;">F1</td><td>98.2</td><td>97.8</td><td>95.4</td><td>91.3</td><td>95.7</td></tr>
+                    <tr><td style="text-align: left;">InternVLA-M1</td><td>98.0</td><td>99.0</td><td>93.8</td><td>92.6</td><td>95.9</td></tr>
+                    <tr><td style="text-align: left;">Discrete Diffusion VLA</td><td>97.2</td><td>98.6</td><td>97.4</td><td>92.0</td><td>96.3</td></tr>
+                    <tr><td style="text-align: left;">$\pi_{0.5}$</td><td>98.8</td><td>98.2</td><td>98.0</td><td>92.4</td><td>96.9</td></tr>
+                    <tr><td style="text-align: left;">GR00T-N1.6</td><td>97.7</td><td>98.5</td><td>97.5</td><td>94.4</td><td>97.0</td></tr>
+                    <tr><td style="text-align: left;">OpenVLA-OFT</td><td>97.6</td><td>98.4</td><td>97.9</td><td>94.5</td><td>97.1</td></tr>
+                    <tr><td style="text-align: left;">UniVLA</td><td>96.5</td><td>96.8</td><td>95.6</td><td>92.0</td><td>95.2</td></tr>
+                    <tr><td style="text-align: left;">X-VLA</td><td>98.2</td><td>98.6</td><td>97.8</td><td><span class="bold-val">97.6</span></td><td>98.1</td></tr>
+                    <tr><td style="text-align: left;">GeoVLA</td><td>98.4</td><td>99.0</td><td>96.6</td><td>96.6</td><td>97.7</td></tr>
+                    <tr><td style="text-align: left;">3D-CAVLA</td><td>98.2</td><td>99.8</td><td>98.2</td><td>96.1</td><td>98.1</td></tr>
+                    <tr><td style="text-align: left;">Spatial Forcing</td><td><span class="bold-val">99.4</span></td><td>99.6</td><td>98.8</td><td>96.0</td><td>98.5</td></tr>
+                    <tr class="ours-row">
+                        <td style="text-align: left;">Ours</td>
+                        <td>98.8</td>
+                        <td><span class="bold-val">99.8</span></td>
+                        <td><span class="bold-val">99.0</span></td>
+                        <td>96.6</td>
+                        <td><span class="bold-val">98.6</span></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-      </div>
-    </div>
-    <!--/ Abstract. -->
 
-    <!-- teaser. -->
-    <div class="columns is-centered has-text-centered">
-      <div class="column is-four-fifths">
-        <!-- <h2 class="title is-3">Teaser</h2> -->
-        <div class="teaser">
-          <img src="./static/images/teaser.png"
-                 class="teaser"
-                 alt="Teaser image."/>
+        <!-- Table 2: LIBERO-Plus -->
+        <div class="table-caption" style="margin-top: 3rem;">Table 2. Zero-shot performance on LIBERO-Plus.</div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Method</th>
+                        <th>Camera</th>
+                        <th>Robot</th>
+                        <th>Language</th>
+                        <th>Light</th>
+                        <th>Background</th>
+                        <th>Noise</th>
+                        <th>Layout</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td style="text-align: left;">OpenVLA</td><td>0.8</td><td>3.5</td><td>23.0</td><td>8.1</td><td>34.8</td><td>15.2</td><td>28.5</td><td>15.6</td></tr>
+                    <tr><td style="text-align: left;">OpenVLA-OFT</td><td>56.4</td><td>31.9</td><td>79.5</td><td>88.7</td><td>93.3</td><td>75.8</td><td>74.2</td><td>69.6</td></tr>
+                    <tr><td style="text-align: left;">OpenVLA-OFT_w</td><td>10.4</td><td>38.7</td><td>70.5</td><td>76.8</td><td>93.6</td><td>49.9</td><td>69.9</td><td>55.8</td></tr>
+                    <tr><td style="text-align: left;">Openvla-OFT_m</td><td>55.6</td><td>21.7</td><td>81.0</td><td>92.7</td><td>91.0</td><td>78.6</td><td>68.7</td><td>67.9</td></tr>
+                    <tr><td style="text-align: left;">NORA</td><td>2.2</td><td>37.0</td><td>65.1</td><td>45.7</td><td>58.6</td><td>12.8</td><td>62.1</td><td>39.0</td></tr>
+                    <tr><td style="text-align: left;">WorldVLA</td><td>0.1</td><td>27.9</td><td>41.6</td><td>43.7</td><td>17.1</td><td>10.9</td><td>38.0</td><td>25.0</td></tr>
+                    <tr><td style="text-align: left;">UniVLA</td><td>1.8</td><td>46.2</td><td>69.6</td><td>69.0</td><td>81.0</td><td>21.2</td><td>31.9</td><td>42.9</td></tr>
+                    <tr><td style="text-align: left;">$\pi_0$</td><td>13.8</td><td>6.0</td><td>58.8</td><td>85.0</td><td>81.4</td><td>79.0</td><td>68.9</td><td>53.6</td></tr>
+                    <tr><td style="text-align: left;">$\pi_0$-Fast</td><td>65.1</td><td>21.6</td><td>61.0</td><td>73.2</td><td>73.2</td><td>74.4</td><td>68.8</td><td>61.6</td></tr>
+                    <tr><td style="text-align: left;">RIPT-VLA</td><td>55.2</td><td>31.2</td><td>77.6</td><td>88.4</td><td>91.6</td><td>73.5</td><td>74.2</td><td>68.4</td></tr>
+                    <tr><td style="text-align: left;">MergeVLA</td><td>50.7</td><td>30.3</td><td>66.0</td><td>84.2</td><td>85.7</td><td>66.0</td><td>68.1</td><td>62.5</td></tr>
+                    <tr><td style="text-align: left;">UnifoLM-VLA-0</td><td>56.7</td><td><span class="bold-val">69.5</span></td><td><span class="bold-val">91.2</span></td><td>93.6</td><td>95.3</td><td>77.9</td><td>77.9</td><td>78.9</td></tr>
+                    <tr class="ours-row">
+                        <td style="text-align: left;">Ours</td>
+                        <td><span class="bold-val">89.6</span></td>
+                        <td>60.1</td>
+                        <td>86.9</td>
+                        <td><span class="bold-val">98.0</span></td>
+                        <td><span class="bold-val">95.7</span></td>
+                        <td><span class="bold-val">97.2</span></td>
+                        <td><span class="bold-val">78.2</span></td>
+                        <td><span class="bold-val">85.7</span></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-        <div class="content has-text-justified">
-          <p>
-            Figure 1. Comparison of three VLA training paradigms: (a) Imitation learning suffers from poor generalization under data scarcity. (b) Prior RL-based post-training methods require real-world interaction, which is often infeasible due to non-resettable state transitions (e.g., object drop or collision). (c) Our proposed World-Env enables post-training via simulated rollouts using a world model, eliminating the need for physical interaction and supporting safe, efficient exploration even with minimal expert demonstrations.
-          </p>
+
+        <!-- Table 3: RoboTwin 2.0 -->
+        <div class="table-caption" style="margin-top: 3rem;">Table 3. Evaluation results on RoboTwin 2.0 Benchmark.</div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align: left;" rowspan="2">Simulation Task</th>
+                        <th colspan="2">$\pi_{0.5}$</th>
+                        <th colspan="2">X-VLA</th>
+                        <th colspan="2" style="background-color: var(--highlight-bg); color: var(--highlight-text);">Ours</th>
+                    </tr>
+                    <tr>
+                        <th>Clean</th><th>Rand.</th>
+                        <th>Clean</th><th>Rand.</th>
+                        <th>Clean</th><th>Rand.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td style="text-align: left;">Place Dual Shoes</td><td>12</td><td>7</td><td>79</td><td><span class="bold-val">88</span></td><td><span class="bold-val">88</span></td><td>86</td></tr>
+                    <tr><td style="text-align: left;">Move Stapler Pad</td><td>16</td><td>18</td><td><span class="bold-val">78</span></td><td>73</td><td>61</td><td>60</td></tr>
+                    <tr><td style="text-align: left;">Stack Blocks Two</td><td>48</td><td>56</td><td>92</td><td>87</td><td>98</td><td><span class="bold-val">99</span></td></tr>
+                    <tr><td style="text-align: left;">Scan Object</td><td>42</td><td>38</td><td>14</td><td>36</td><td><span class="bold-val">91</span></td><td>87</td></tr>
+                    <tr><td style="text-align: left;">Place Object Stand</td><td>74</td><td>65</td><td>86</td><td>88</td><td><span class="bold-val">90</span></td><td>87</td></tr>
+                    <tr><td style="text-align: left;">Place Fan</td><td>25</td><td>36</td><td>80</td><td>75</td><td>90</td><td><span class="bold-val">94</span></td></tr>
+                    <tr><td style="text-align: left;">Move Pillbottle Pad</td><td>33</td><td>29</td><td>73</td><td>71</td><td><span class="bold-val">96</span></td><td><span class="bold-val">96</span></td></tr>
+                    <tr><td style="text-align: left;">Pick Dual Bottles</td><td>10</td><td>6</td><td>47</td><td>36</td><td><span class="bold-val">88</span></td><td>76</td></tr>
+                    <tr><td style="text-align: left;">Blocks Ranking Rgb</td><td>43</td><td>35</td><td>83</td><td>83</td><td>95</td><td><span class="bold-val">98</span></td></tr>
+                    <tr><td style="text-align: left;">......(50 tasks)</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+                    <tr><td style="text-align: left;">Turn Switch</td><td>5</td><td>6</td><td>40</td><td>61</td><td>55</td><td><span class="bold-val">72</span></td></tr>
+                    <tr><td style="text-align: left;">Pick Diverse Bottles</td><td>5</td><td>3</td><td>58</td><td>36</td><td><span class="bold-val">80</span></td><td>74</td></tr>
+                    <tr><td style="text-align: left;">Place Bread Basket</td><td>48</td><td>56</td><td>81</td><td>71</td><td><span class="bold-val">86</span></td><td>83</td></tr>
+                    <tr><td style="text-align: left;">Stack Blocks Three</td><td>15</td><td>16</td><td>6</td><td>10</td><td><span class="bold-val">91</span></td><td>84</td></tr>
+                    <tr><td style="text-align: left;">Put Bottles Dustbin</td><td>12</td><td>9</td><td>74</td><td>77</td><td>62</td><td><span class="bold-val">87</span></td></tr>
+                    <tr><td style="text-align: left;">Place Can Basket</td><td>19</td><td>25</td><td>49</td><td>52</td><td><span class="bold-val">82</span></td><td>73</td></tr>
+                    <tr><td style="text-align: left;">Stamp Seal</td><td>36</td><td>23</td><td>76</td><td>82</td><td>81</td><td><span class="bold-val">88</span></td></tr>
+                    <tr><td style="text-align: left;">Handover Block</td><td>18</td><td>19</td><td>73</td><td>37</td><td>87</td><td><span class="bold-val">89</span></td></tr>
+                    <tr><td style="text-align: left;">Stack Bowls Three</td><td>33</td><td>35</td><td>76</td><td>86</td><td>81</td><td><span class="bold-val">92</span></td></tr>
+                    <tr><td style="text-align: left;">Place Object Basket</td><td>43</td><td>36</td><td>44</td><td>39</td><td>85</td><td><span class="bold-val">93</span></td></tr>
+                    <tr><td style="text-align: left;">Open Microwave</td><td>35</td><td>37</td><td>79</td><td>71</td><td><span class="bold-val">93</span></td><td>90</td></tr>
+                    <tr class="ours-row">
+                        <td style="text-align: left;">Average</td>
+                        <td>42.98</td><td>43.84</td>
+                        <td>72.80</td><td>72.84</td>
+                        <td>85.18</td><td><span class="bold-val">86.06</span></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-      </div>
-    </div>
-    <!--/ teaser. -->
-  </div>
-</section>
+    </section>
 
-<section class="section">
-  <div class="container is-max-desktop">
-    <!-- Overview. -->
-    <div class="columns is-centered has-text-centered">
-      <div class="column is-four-fifths">
-        <h2 class="title is-3">Method</h2>
-        <div class="content has-text-justified">
-          <img src="./static/images/overview.png"
-                 class="teaser"
-                 alt="Teaser image."/>
+    <!-- Real World Videos: SECOND -->
+    <section class="container">
+        <h2 class="section-title">Real-World Experiments</h2>
+        <p class="has-text-centered" style="text-align: center; margin-bottom: 2rem; color: #6b7280;">
+            Demonstrating robust manipulation capabilities in diverse physical scenarios with smooth trajectory execution.
+        </p>
+
+        <div class="video-grid">
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/pink_cube_to_red_cup/1.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Insert pink cube into red cup</div>
+            </div>
+
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/pink_cube_to_red_cup/2.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Insert pink cube into red cup</div>
+            </div>
+            
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/cyliner_to_block/1.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Place cylinder on green block.</div>
+            </div>
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/cyliner_to_block/2.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Place cylinder on green block.</div>
+            </div>
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/green_cup_to_red_block/21.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Place green cup on red block.</div>
+            </div>
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/green_cup_to_red_block/23.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Place green cup on red block.</div>
+            </div>
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/blue_block_to_red_block/1.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Stack blue block on red block.</div>
+            </div>
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/blue_block_to_red_block/2.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Stack blue block on red block.</div>
+            </div>
+            <!-- <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/blue_block_to_red_block/3.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Stack blue block on red block.</div>
+            </div> -->
         </div>
-        <div class="content has-text-justified">
-          <p>
-            Figure 2. Overview of World-Env. Our framework comprises: (1) a Training Data Strategy that augments human demonstrations trajectories with VLA self-explored trajectories to train the WorldEnv Simulator; (2) an Optimization Loop where the VLA model generates actions, the simulator predicts future observations, and the World-Env Reflector generates feedback; and (3) Reward & End Signal provides trajectory-wise reward and end signals for RL optimization.
-          </p>
+    </section>
+    <section class="container">
+        <h2 class="section-title">Zero-shot Generalization</h2>
+        <p class="has-text-centered" style="text-align: center; margin-bottom: 2rem; color: #6b7280;">
+            Test on unseen tasks and objects to validate generalziation ability.
+        </p>
+
+        <div class="video-grid">
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/pink_cube_to_blue_cup/1.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Insert pink cube into blue cup</div>
+            </div>
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/pink_cube_to_blue_cup/2.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Insert pink cube into blue cup</div>
+            </div>
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/pink_cube_to_blue_cup/3.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Insert pink cube into blue cup</div>
+            </div>
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/cylinder_to_red_block/1.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Place cylinder on red block.</div>
+            </div>
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/cylinder_to_red_block/2.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Place cylinder on red block.</div>
+            </div>
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/cylinder_to_red_block/3.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Place cylinder on red block.</div>
+            </div>
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/cylinder_to_red_block/4.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Place cylinder on red block.</div>
+            </div>
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/orange_cup_to_red_block/1.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Place orange cup on red block.</div>
+            </div>
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/orange_cup_to_red_block/2.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Place orange cup on red block.</div>
+            </div>
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/orange_cup_to_red_block/3.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Place orange cup on red block.</div>
+            </div>
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/red_block_to_blue_block/1.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Stack red block on blue block.</div>
+            </div>
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/red_block_to_blue_block/2.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Stack red block on blue block.</div>
+            </div>
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/red_block_to_green_block/1.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Stack red block on green block.</div>
+            </div>
+            <div class="video-item">
+                <video autoplay controls muted loop playsinline>
+                    <source src="./static/videos/red_block_to_green_block/2.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Stack red block on green block.</div>
+            </div>
         </div>
-      </div>
-    </div>
-    <!--/ method. -->
-  </div>
-</section>
+            
+    </section>
 
-<section class="section">
-  <div class="container is-max-desktop">
-    <!-- results. -->
-    <div class="columns is-centered has-text-centered">
-      <div class="column is-four-fifths">
-        <h2 class="title is-3">Comparison Results</h2>
-        <div class="content has-text-justified">
-          <img src="./static/images/tab1.png"
-                 class="table"
-                 alt="table 1."/>
-          <p>Table 1. Success rate comparison on the LIBERO benchmark. We report success rates for each method using the same setting with only 5 demonstrations per task. </p>
+    <!-- Citation with Copy Button -->
+    <section class="container">
+        <h2 class="section-title">Citation</h2>
+        <div class="bibtex-wrapper">
+            <button class="copy-btn" onclick="copyBibTeX()">
+                <i class="far fa-copy"></i> <span id="copy-text">Copy</span>
+            </button>
+            <div class="bibtex-container" id="bibtex-content">
+@article{xiao2026learning,
+  title={Learning Action Manifolds with Multi-view Latent Priors for Robotic Manipulation}, 
+  author={Junjin Xiao and Dongyang Li and Yandan Yang and Shuang Zeng and Tong Lin and Xinyuan Chang and Feng Xiong and Mu Xu and Wei-Shi Zheng and Xing Wei and Zhiheng Ma and Qing Zhang},
+  year={2026},
+  journal={arxiv},
+}
+            </div>
         </div>
-        <div class="content has-text-justified">
-          <img src="./static/images/line.png"
-                 class="figure"
-                 alt="figure3 1."/>
-          <p>Figure 2. Comparison between our method and SFT on multi-goal tasks. Note, all results are collected every 5 training steps for three distinct goals. </p>
+    </section>
+
+    <!-- Image Carousel / Slider -->
+    <!-- <section class="carousel-section">
+        <div class="container">
+            <h2 class="section-title">More Visualizations</h2>
+            <div class="carousel-container">
+                <div class="carousel-track" id="carouselTrack">
+                    <div class="carousel-slide">
+                        <img src="./static/images/gate.png" alt="visualization of gate map">
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="./static/images/depth.png" alt="depth comparison">
+                    </div>
+                </div>
+                
+                <div class="carousel-nav">
+                    <button class="carousel-btn" id="prevBtn"><i class="fas fa-chevron-left"></i></button>
+                    <button class="carousel-btn" id="nextBtn"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+            
+            <div class="carousel-dots" id="carouselDots">
+            </div>
         </div>
-      </div>
-    </div>
-    <!--/ result. -->
-    
-  </div>
-</section>
+    </section> -->
 
-
-<section class="section">
-  <div class="container is-max-desktop">
-
-    <div class="columns is-centered has-text-centered">
-
-      <!-- Visual Effects. -->
-      <div class="column">
-        <div class="content">
-          <h2 class="title is-3">Rendering Results of World-env</h2>
-          <video id="demo1" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/demo_1.mp4"
-                    type="video/mp4">
-          </video>
-          <video id="demo2" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/demo_2.mp4"
-                    type="video/mp4">
-          </video>
-          <video id="demo3" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/demo_3.mp4"
-                    type="video/mp4">
-          </video>
-          <video id="demo4" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/demo_5.mp4"
-                    type="video/mp4">
-          </video>
-          <video id="demo5" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/demo_6.mp4"
-                    type="video/mp4">
-          </video>
-          <video id="demo6" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/demo_7.mp4"
-                    type="video/mp4">
-          </video>
-          <video id="demo7" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/demo_9.mp4"
-                    type="video/mp4">
-          </video>
-          <video id="demo8" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/demo_10.mp4"
-                    type="video/mp4">
-          </video>
-          <video id="demo9" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/demo_11.mp4"
-                    type="video/mp4">
-          </video>
+    <footer>
+        <div class="container">
+            <p>Website template adapted from <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>.</p>
         </div>
-      </div>
-      <!--/ Visual Effects. -->
+    </footer>
 
-    </div>
+    <script>
+        // 1. KaTeX Rendering
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+              delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false},
+                {left: '\\(', right: '\\)', display: false},
+                {left: '\\[', right: '\\]', display: true}
+              ],
+              throwOnError : false
+            });
+        });
 
-  </div>
-</section>
+        // 2. Copy BibTeX Function
+        function copyBibTeX() {
+            const bibtexContent = document.getElementById('bibtex-content').innerText;
+            const copyBtn = document.querySelector('.copy-btn');
+            const copyText = document.getElementById('copy-text');
+            const icon = copyBtn.querySelector('i');
 
+            navigator.clipboard.writeText(bibtexContent).then(() => {
+                copyBtn.classList.add('copied');
+                copyText.innerText = 'Copied!';
+                icon.className = 'fas fa-check';
+                
+                setTimeout(() => {
+                    copyBtn.classList.remove('copied');
+                    copyText.innerText = 'Copy';
+                    icon.className = 'far fa-copy';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
 
-<section class="section" id="BibTeX">
-  <div class="container is-max-desktop content">
-    <h2 class="title">BibTeX</h2>
-    <pre><code>@misc{xiao2025worldenvleveragingworldmodel,
-      title={World-Env: Leveraging World Model as a Virtual Environment for VLA Post-Training}, 
-      author={Junjin Xiao and Yandan Yang and Xinyuan Chang and Ronghan Chen and Feng Xiong and Mu Xu and Wei-Shi Zheng and Qing Zhang},
-      year={2025},
-      eprint={2509.24948},
-      archivePrefix={arXiv},
-      primaryClass={cs.RO},
-      url={https://arxiv.org/abs/2509.24948}, 
-}</code></pre>
-  </div>
-</section>
+        // 3. Carousel Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const track = document.getElementById('carouselTrack');
+            const slides = Array.from(track.children);
+            const nextBtn = document.getElementById('nextBtn');
+            const prevBtn = document.getElementById('prevBtn');
+            const dotsContainer = document.getElementById('carouselDots');
+            
+            let currentIndex = 0;
 
+            // Create Dots
+            slides.forEach((_, index) => {
+                const dot = document.createElement('div');
+                dot.classList.add('dot');
+                if (index === 0) dot.classList.add('active');
+                dot.addEventListener('click', () => goToSlide(index));
+                dotsContainer.appendChild(dot);
+            });
 
-<footer class="footer">
-  <div class="container">
-    <div class="columns is-centered">
-      <div class="column is-8">
-        <div class="content">
-          <p>
-            Website template is borrowed from <a
-              href="https://github.com/nerfies/nerfies.github.io">nerfies</a>.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</footer>
+            const dots = Array.from(dotsContainer.children);
 
+            function updateCarousel() {
+                track.style.transform = `translateX(-${currentIndex * 100}%)`;
+                dots.forEach(dot => dot.classList.remove('active'));
+                dots[currentIndex].classList.add('active');
+            }
+
+            function goToSlide(index) {
+                currentIndex = index;
+                updateCarousel();
+            }
+
+            function nextSlide() {
+                currentIndex = (currentIndex + 1) % slides.length;
+                updateCarousel();
+            }
+
+            function prevSlide() {
+                currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+                updateCarousel();
+            }
+
+            nextBtn.addEventListener('click', nextSlide);
+            prevBtn.addEventListener('click', prevSlide);
+
+            // Drag functionality
+            let isDragging = false;
+            let startPos = 0;
+
+            track.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startPos = e.pageX;
+                track.style.cursor = 'grabbing';
+            });
+
+            track.addEventListener('mouseup', (e) => {
+                isDragging = false;
+                track.style.cursor = 'grab';
+                const endPos = e.pageX;
+                const diff = startPos - endPos;
+
+                if (diff > 50) nextSlide();
+                else if (diff < -50) prevSlide();
+                else updateCarousel();
+            });
+            
+            track.addEventListener('mouseleave', () => {
+                if(isDragging) {
+                    isDragging = false;
+                    track.style.cursor = 'grab';
+                    updateCarousel();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
