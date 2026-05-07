@@ -608,10 +608,10 @@
         <h2 class="section-title">Abstract</h2>
         <div class="content-text">
             <p>
-                This paper addresses the challenges of spatial perception and manipulation in Vision-Language-Action (VLA) models within complex environments. While recent works have attempted to enhance VLA perception ability by injecting or distilling features from 3D foundation models, they, however, achieve only limited spatial understanding accuracy improvement, due to biased geometric predictions led by inherent depth ambiguity under monocular input conditions. Furthermore, existing methods predominantly rely on diffusion-based or flow matching action noise prediction paradigms, where their adopted indirect decoding mechanisms tend to introduce unnecessary stochasticity and result in action jittering and inefficient sampling.
+                This paper addresses the challenges of spatial perception and manipulation in Vision-Language-Action (VLA) models within complex environments. While recent works have attempted to enhance VLA perception ability by injecting or distilling features from 3D foundation models, they, however, achieve only limited spatial understanding accuracy improvement, due to biased geometric predictions led by inherent depth ambiguity under monocular input conditions. Furthermore, existing action generation methods rely on indirect paradigms that predict high-dimensional noise or velocity. Regressing these unstructured targets imposes a significant optimization burden, which intensifies as the action dimensionality increases, thereby hindering the efficient learning of complex robotic policies.
             </p>
             <p>
-                To address these issues, we present a VLA framework with two novel designs. First, to tackle depth ambiguity, we leverage pre-trained multi-view diffusion models to synthesize novel views in latent space. We introduce the <strong>Geometry-Guided Gated Transformer ($\text{G}^3\text{T}$)</strong> to align these multi-view latent priors with monocular 3D geometric features, selectively aggregating informative views while suppressing occlusion noise. Second, we propose <strong>Action Manifold Learning (AML)</strong>, a direct action prediction mechanism that shifts the target from abstract noise to direct action decoding on a low-dimensional manifold. Extensive evaluations on LIBERO, LIBERO-Plus, RoboTwin 2.0, and real-world robot experiments demonstrate that our method outperforms state-of-the-art baselines in both success rate and robustness.
+                To address these issues, we present a VLA framework with the following two novel designs. First, to tackle the depth ambiguity from monocular inputs, we propose to leverage pre-trained multi-view diffusion models to synthesize novel views in latent space, obtaining enriched scene context with largely reduced geometric uncertainties. To effectively integrate these multi-view latent priors, we present <strong>Geometry-Guided Gated Transformer (G<sup>3</sup>T)</strong>, which is designed to align multi-view latent features under the guidance of monocular 3D geometric priors and selectively aggregate informative views while suppressing noise from occluded regions based on an adaptive gating mechanism. Second, to overcome the optimization inefficiencies, we introduce <strong>Action Manifold Learning (AML)</strong>. Unlike traditional methods that decode abstract noise or velocity, AML shifts the prediction target to direct action estimation, enabling the policy to focus on learning the intrinsic structure of valid actions for more efficient and robust execution. Extensive evaluations on LIBERO, LIBERO-Plus, RoboTwin 2.0, and real-world robot experiments demonstrate that our method outperforms state-of-the-art baselines in both success rate and robustness.
             </p>
         </div>
 
@@ -619,7 +619,7 @@
         <div class="figure-card">
             <img src="./static/images/teaser.png" alt="Teaser Comparison">
             <div class="caption">
-                <strong>Figure 1. Methodology comparison.</strong> (a) Existing VLA models either rely on expensive RGB-D sensors or (b) suffer from severe depth ambiguity under monocular settings. (c) Our method leverages a multi-view diffusion prior and $\text{G}^3\text{T}$ to synthesize robust geometric features from a single RGB image. (d) Our method demonstrates superior stability against disturbances in LIBERO-Spatial tasks.
+                <strong>Figure 1. Methodology comparison.</strong> Existing VLA models either rely on expensive RGB-D sensors for explicit 3D input (a) or suffer from severe depth ambiguity under monocular settings (b). In contrast, our method leverages multi-view diffusion prior and Geometry-Guided Gated Transformer ($\text{G}^3\text{T}$) to synthesize robust geometric features from a single RGB image, resolving the depth ambiguity without utilizing extra hardware (c). As shown in (d), our method demonstrates stability against disturbances under LIBERO-Spatial tasks. Dark bars: success rate under perturbation, light bars: original result. Our approach exhibits minimal degradation (8.0) compared to baselines.
             </div>
         </div>
     </section>
@@ -637,7 +637,7 @@
             <div class="method-item">
                 <h3>Action Manifold Hypothesis</h3>
                 <p>
-                    Traditional diffusion policies predict abstract noise ($\epsilon$-prediction), which is high-dimensional and unstructured. We posit that meaningful robot actions reside on a low-dimensional <strong>Action Manifold</strong>. By directly predicting clean actions on this manifold (AML), we eliminate unnecessary stochasticity and ensure smoother trajectory execution.
+                    Traditional diffusion policies predict abstract noise ($\epsilon$-prediction), which is high-dimensional and unstructured. We posit that meaningful robot actions reside on a low-dimensional <strong>Action Manifold</strong>. By directly predicting clean actions on this manifold (AML), we eliminate unnecessary stochasticity and ensure more efficient model optimization.
                 </p>
             </div>
         </div>
@@ -693,7 +693,7 @@
         <h2 class="section-title">Experimental Results</h2>
         
         <!-- Table 1: LIBERO -->
-        <div class="table-caption">Table 1. Evaluation results on the LIBERO benchmark.</div>
+        <div class="table-caption">Table 1. Evaluation results on LIBERO benchmark.</div>
         <div class="table-container">
             <table>
                 <thead>
